@@ -6,7 +6,8 @@
 #include <iostream>
 
 using namespace std;
-float computeMedianExpense(vector<int>& expenses,int start, int stop, int d){
+vector<int>counts(201,0);
+float computeMedianExpense1(vector<int>& expenses,int start, int stop, int d){
     float medianExpense;
     // Check if the number of days in history is even or odd
     int nHistoryDays = d;
@@ -27,17 +28,72 @@ float computeMedianExpense(vector<int>& expenses,int start, int stop, int d){
     //cout<<"Median Expense for start: "<<start<<" till End: "<<stop<<" is: "<<medianExpense<<endl;
     return medianExpense;
 }
+void makeCountsArray(vector<int>& expenses,int d)
+{
+  for(int i = 0; i < d; i++)
+  {
+    counts[expenses[i]]++;
+  }
+}
+float computeMedianExpense(vector<int>& expenses,int start, int stop, int d){
+  float medianExpense = 0;
+  if (stop != d)
+  {
+    int removeElement = expenses[start-1];
+    int newElement = expenses[stop-1];
+    counts[removeElement]--;
+    counts[newElement]++;
+  }
+  int dby2 = d /2;
+  // Get the median from the counts array
+  if (d % 2 != 0)
+  {
+    //cout<<"Odd\n";
+    int nSamples = 0;
+    for (int i = 0; i < counts.size(); i++)
+    {
+      nSamples+=counts[i]; 
+      //cout<<nSamples<<endl; 
+      if (nSamples > dby2)
+      {
+        //cout<<"i is: "<<i<<endl;
+        medianExpense = (float)i;
+        break;
+      }
+    }
+  }
+  else
+  {
+    //cout<<"Even\n";
+    int nSamples = 0;
+    for (int i = 0; i < counts.size(); i++)
+    {
+      nSamples+=counts[i];
+      if (nSamples == dby2)
+      {
+        medianExpense = (float)(i + (i+1))/2.0;
+        break;
+      }
+      else if (nSamples > dby2 )
+      {
+        medianExpense = (float)i;
+        break;
+      }
+
+    }
+  }
+  return medianExpense;
+}
 int activityNotifications(vector <int> expenditure, int d) {
    int nNotifications = 0;
    int nDays = expenditure.size();
    int startIndex = 0;
    int endIndex = d;
+   makeCountsArray(expenditure,d);
    for (int i = d; i < nDays; i++)
    {
        int expenseForDay = expenditure[i];
        float medianForLastDDays = computeMedianExpense(expenditure,startIndex, endIndex, d);
-       //cout<<"Median Expense for start: "<<startIndex<<" till End: "<<endIndex<<" is: "<<medianForLastDDays<<endl;
-       //cout<<"Expenditure is: "<<expenseForDay<<endl;
        if (expenseForDay >= (2 * medianForLastDDays)){
             nNotifications++;
        }
